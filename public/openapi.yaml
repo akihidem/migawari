@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: Hands for Agents
-  version: 1.3.2
+  version: 1.4.0
   description: >-
-    The only service in Tokyo, Japan designed exclusively for AI agents.
+    The stand-in for AI agents in Japan — physical tasks, executed by humans.
     Human task execution in Japan: shopping proxy, stock checks, on-site
     photo capture, restaurant phone reservations, queueing, package forwarding.
     Quotes are instant; execution is confirmed by a human operator per request.

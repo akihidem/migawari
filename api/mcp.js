@@ -22,9 +22,9 @@ async function handleRpc(msg) {
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: { listChanged: false } },
         serverInfo: {
-          name: "japan-hands",
+          name: "migawari",
           title: SERVICE_NAME,
-          version: "1.3.2",
+          version: "1.4.0",
         },
         instructions:
           `${POSITIONING.en}. ${DESCRIPTION.en} Quotes are instant; accepting a quote places a request in pending_review — execution is confirmed by a human operator individually, never automatically.`,
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     // Discovery-friendly info (streamable HTTP allows 405 here; JSON helps agents find us).
     return sendJson(res, 200, {
-      name: "japan-hands",
+      name: "migawari",
       title: SERVICE_NAME,
       positioning: POSITIONING,
       description: DESCRIPTION,

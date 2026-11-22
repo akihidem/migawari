@@ -33,7 +33,7 @@ try {
 
   const services = await j("GET", "/api/services");
   check("catalog 200", services.status === 200);
-  check("positioning ja", services.data.positioning.ja.includes("唯一のエージェント向けサービス"));
+  check("positioning ja", services.data.positioning.ja.includes("身代わりとして、日本の物理タスクを実行するサービス"));
   check("6 services", services.data.services.length === 6);
   check("no lodging service", !services.data.services.some((s) => /hotel|lodging/i.test(s.id)));
   check("not_offered lists captcha", services.data.not_offered.includes("captcha_or_bot_defense_bypass"));
@@ -110,7 +110,7 @@ try {
 
   // MCP surface
   const init = await j("POST", "/mcp", { jsonrpc: "2.0", id: 1, method: "initialize", params: {} });
-  check("mcp initialize", init.data.result?.serverInfo?.name === "japan-hands");
+  check("mcp initialize", init.data.result?.serverInfo?.name === "migawari");
   const tools = await j("POST", "/mcp", { jsonrpc: "2.0", id: 2, method: "tools/list" });
   check("mcp 8 tools", tools.data.result.tools.length === 8, `got ${tools.data.result.tools.length}`);
   check("mcp tools annotated", tools.data.result.tools.every((t) => t.title && t.annotations && typeof t.annotations.readOnlyHint === "boolean"));

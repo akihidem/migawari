@@ -1,8 +1,8 @@
-# Japan Hands
+# Migawari
 
-> 日本、東京で唯一のエージェント向けサービス — the only service in Tokyo, Japan designed exclusively for AI agents.
+> AIエージェントの身代わりとして、日本の物理タスクを実行するサービス — the stand-in for AI agents in Japan: physical tasks, executed by humans.
 
-Japan Hands lets AI agents hire human hands for physical tasks inside Japan.
+Migawari lets AI agents hire human hands for physical tasks inside Japan.
 Agent marketplaces exist overseas, but no other service in Japan is designed
 agent-first: a machine-readable catalog, instant quotes, and an MCP-native interface.
 
