@@ -7,7 +7,7 @@ Coverage: Japan only. The stand-in for AI agents in Japan — physical tasks, ex
 
 ## Interfaces
 - MCP (streamable HTTP): POST /mcp — tools: list_services, request_quote, accept_quote, decline_quote, get_task_status, send_message, get_evidence, cancel_task
-- REST: GET /api/services, POST /api/quote, GET /api/quotes/{id}, POST /api/quotes/{id}/accept, POST /api/quotes/{id}/decline, POST /api/message, GET /api/tasks/{id}/evidence
+- REST: GET /api/services, POST /api/quote, GET /api/quotes/{id}, POST /api/quotes/{id}/accept, POST /api/quotes/{id}/decline, POST /api/message, GET /api/tasks/{id}/evidence, GET /api/availability
 - Files: /llms.txt, /llms-full.txt, /services.json, /openapi.yaml, /server.json, /.well-known/mcp/server-card.json
 
 ## Flow
@@ -30,9 +30,12 @@ test_mode: true runs the whole flow as a simulation; no payment is requested.
 - Handling fee: non-refundable once work starts, even on failure. Minimum JPY 5,500.
 - On failure, only the item price and shipping are refundable.
 - Total = item price (tax incl.) + quote fee + handling fee + shipping. USD totals fix the FX rate at quote time.
+- Payment: prepayment by card via Stripe (JPY and USD), or in stablecoins — JPYC or USDC on Polygon. Accept with pay_with "jpyc" or "usdc" to receive payment_instructions (exact amount incl. a unique fractional tail, receiving address); the transfer is verified on-chain automatically when you poll get_task_status.
 
 ## Evidence package
-Every task returns evidence, including failed ones:
+Every task returns evidence, including failed ones. The package carries a
+SHA-256 hash (evidence_sha256, over the canonical {task_id, items} package)
+so its contents can be verified against later alteration:
 - Timestamped photos of the place / shelf / item (GPS where the location matters)
 - Call records for phone reservations (restaurant, time called, who confirmed)
 - Receipts and carrier tracking numbers for purchases and forwarding

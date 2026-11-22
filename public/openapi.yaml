@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Hands for Agents
-  version: 1.4.0
+  version: 1.5.0
   description: >-
     The stand-in for AI agents in Japan — physical tasks, executed by humans.
     Human task execution in Japan: shopping proxy, stock checks, on-site
@@ -27,9 +27,13 @@ paths:
       responses: { "200": { description: OK }, "404": { description: Not found } }
   /api/quotes/{id}/accept:
     post:
-      summary: Accept a quote (body: {access_token}). Enters pending_review; NOT a confirmation of execution.
+      summary: Accept a quote (body: {access_token, pay_with?}). Enters pending_review; NOT a confirmation of execution. pay_with selects the payment rail — "card" (Stripe, default), "jpyc" or "usdc" (stablecoins on Polygon); a stablecoin accept returns payment_instructions with the exact amount and receiving address.
       parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
       responses: { "200": { description: Accepted into pending_review }, "400": { description: Error } }
+  /api/availability:
+    get:
+      summary: Whether new tasks are currently accepted ({accepting_new_tasks, note})
+      responses: { "200": { description: OK } }
   /api/quotes/{id}/decline:
     post:
       summary: Decline a quote (body: {access_token, reason?}). No charge is made for declining a quote you have not accepted.

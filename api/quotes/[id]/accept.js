@@ -10,6 +10,6 @@ export default async function handler(req, res) {
   const rl = await rateLimitExceeded(req, "write");
   if (rl) return sendRateLimited(res, rl);
   const body = (await readJsonBody(req)) || {};
-  const out = await acceptQuote({ quote_id: req.query?.id, access_token: body.access_token || bearerOf(req) || undefined });
+  const out = await acceptQuote({ quote_id: req.query?.id, access_token: body.access_token || bearerOf(req) || undefined, pay_with: body.pay_with || undefined });
   return sendJson(res, out.isError ? 400 : 200, out);
 }

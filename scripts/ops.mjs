@@ -10,6 +10,8 @@
 //   node scripts/ops.mjs status <task_id> <in_progress|completed|failed> [--note "text"]
 //   node scripts/ops.mjs evidence <task_id> --type photo|record|tracking|note --url <url> [--label "text"]
 //   node scripts/ops.mjs reply <id> --message "text"
+//   node scripts/ops.mjs check-stablecoin <task_id>   (verify a JPYC/USDC payment on Polygon now)
+//   node scripts/ops.mjs availability [on|off]        (show or toggle accepting new tasks)
 //
 // Storage follows lib/store.js: Vercel KV when KV_REST_API_URL/KV_REST_API_TOKEN
 // are set (load them from .env.local — `vercel env pull`), else the local file.
@@ -27,6 +29,8 @@ try {
 } catch { /* no .env.local: rely on the environment */ }
 
 const { getRecord, putRecord, listRecords, storageBackend } = await import("../lib/store.js");
+const { attachEvidence } = await import("../lib/evidence.js");
+const { checkStablecoinPayment } = await import("../lib/stablecoin.js");
 
 const now = () => new Date().toISOString();
 const args = process.argv.slice(2);
@@ -125,12 +129,12 @@ switch (cmd) {
     const url = flag("url");
     const label = flag("label") || "";
     if (!url && !label) { console.error("evidence needs --url or --label"); process.exit(1); }
-    task.evidence = task.evidence || [];
     const item = { type, url: url || null, label, at: now() };
-    task.evidence.push(item);
+    attachEvidence(task, item);
     touch(task, "evidence_added", { type });
     await putRecord("tasks", task.id, task);
     console.log(`evidence added to ${task.id}: ${JSON.stringify(item)}`);
+    console.log(`evidence package sha256: ${task.evidence.sha256}`);
     break;
   }
   case "paid": {
@@ -140,6 +144,33 @@ switch (cmd) {
     touch(task, "payment_recorded_manual", { note });
     await putRecord("tasks", task.id, task);
     console.log(`payment marked paid (manual): ${task.id}`);
+    break;
+  }
+  case "check-stablecoin": {
+    const task = await loadTask(args[1]);
+    try {
+      const out = await checkStablecoinPayment(task);
+      console.log(JSON.stringify(out, null, 2));
+    } catch (e) {
+      console.error(`stablecoin check failed: ${e.message}`);
+      process.exit(1);
+    }
+    break;
+  }
+  case "availability": {
+    const mode = args[1];
+    if (mode === "on" || mode === "off") {
+      const rec = {
+        accepting_new_tasks: mode === "on",
+        note: mode === "on" ? "Accepting new tasks." : "Temporarily not accepting new tasks. Existing tasks are unaffected.",
+        updated_at: now(),
+      };
+      await putRecord("settings", "availability", rec);
+      console.log(`availability -> ${mode} (accepting_new_tasks: ${rec.accepting_new_tasks})`);
+    } else {
+      const rec = await getRecord("settings", "availability");
+      console.log(JSON.stringify(rec || { accepting_new_tasks: true, note: "Accepting new tasks. (default — no settings record)" }, null, 2));
+    }
     break;
   }
   case "reply": {
@@ -155,5 +186,5 @@ switch (cmd) {
     break;
   }
   default:
-    console.log("commands: list | show <id> | confirm <task_id> [--note] | paid <task_id> [--note] | decline <task_id> --reason | status <task_id> <in_progress|completed|failed> [--note] | evidence <task_id> --type --url [--label] | reply <id> --message");
+    console.log("commands: list | show <id> | confirm <task_id> [--note] | paid <task_id> [--note] | decline <task_id> --reason | status <task_id> <in_progress|completed|failed> [--note] | evidence <task_id> --type --url [--label] | reply <id> --message | check-stablecoin <task_id> | availability [on|off]");
 }

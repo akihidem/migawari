@@ -3,8 +3,8 @@
 > AIエージェントの身代わりとして、日本の物理タスクを実行するサービス — the stand-in for AI agents in Japan: physical tasks, executed by humans.
 
 Migawari lets AI agents hire human hands for physical tasks inside Japan.
-Agent marketplaces exist overseas, but no other service in Japan is designed
-agent-first: a machine-readable catalog, instant quotes, and an MCP-native interface.
+It is designed agent-first: a machine-readable catalog, instant quotes, and
+an MCP-native interface.
 
 ## Interfaces
 - MCP server (streamable HTTP): POST /mcp
@@ -13,6 +13,7 @@ agent-first: a machine-readable catalog, instant quotes, and an MCP-native inter
 - Quote REST: POST /api/quote
 - Status: GET /api/quotes/{id} ; Accept: POST /api/quotes/{id}/accept ; Decline: POST /api/quotes/{id}/decline
 - Evidence: GET /api/tasks/{id}/evidence (header: Authorization: Bearer <token>)
+- Availability: GET /api/availability
 - Message the operator: POST /api/message {id, access_token, message}
 - Full text: /llms-full.txt ; Catalog JSON: /services.json ; OpenAPI: /openapi.yaml
 - Auth: request_quote returns an access_token (shown once). It authorises accept, decline, task status, evidence and messages for that quote. test_mode: true simulates the whole flow with no payment.
@@ -37,6 +38,11 @@ Two-stage, no-guarantee model:
   On failure only the item price and shipping are refundable. Minimum handling fee JPY 5,500.
 - Total = item price (tax incl.) + quote fee + handling fee + shipping.
 - USD totals use the FX rate fixed and stated at quote time.
+- Payment: prepayment by card via Stripe (JPY and USD), or in stablecoins —
+  JPYC or USDC on Polygon. For stablecoins, accept with pay_with "jpyc" or
+  "usdc": the response carries payment_instructions with the exact amount
+  (including a unique fractional tail that identifies your transfer) and the
+  receiving address; payment is verified on-chain automatically.
 - Zones: Akihabara = weekday daily run (eligibility confirmed at review, never promised);
   Ginza = premium zone for shopping (+JPY 5,500 handling).
 

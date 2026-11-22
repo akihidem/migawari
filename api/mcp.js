@@ -24,7 +24,7 @@ async function handleRpc(msg) {
         serverInfo: {
           name: "migawari",
           title: SERVICE_NAME,
-          version: "1.4.0",
+          version: "1.5.0",
         },
         instructions:
           `${POSITIONING.en}. ${DESCRIPTION.en} Quotes are instant; accepting a quote places a request in pending_review — execution is confirmed by a human operator individually, never automatically.`,

@@ -3,7 +3,9 @@
 import { spawn } from "node:child_process";
 import { rmSync } from "node:fs";
 import { createHmac } from "node:crypto";
+import http from "node:http";
 rmSync("/tmp/hfa-test-store.json", { force: true });
+rmSync("/tmp/hfa-test-store2.json", { force: true });
 
 const PORT = 8799;
 const base = `http://localhost:${PORT}`;
@@ -33,6 +35,9 @@ try {
 
   const services = await j("GET", "/api/services");
   check("catalog 200", services.status === 200);
+
+  const avail = await j("GET", "/api/availability");
+  check("availability 200 + shape", avail.status === 200 && avail.data.accepting_new_tasks === true && typeof avail.data.note === "string", `got ${avail.status}/${JSON.stringify(avail.data)}`);
   check("positioning ja", services.data.positioning.ja.includes("身代わりとして、日本の物理タスクを実行するサービス"));
   check("6 services", services.data.services.length === 6);
   check("no lodging service", !services.data.services.some((s) => /hotel|lodging/i.test(s.id)));
@@ -142,8 +147,125 @@ try {
   check("webhook good signature 200", whOk.status === 200, `got ${whOk.status}`);
   const paidView = await j("GET", "/api/quotes/" + accept.data.task_id, null, bearer(q.data["access" + "_token"]));
   check("task payment_status paid after webhook", paidView.data.payment_status === "paid", `got ${paidView.data.payment_status}`);
+
+  // ── stablecoin rail fails closed when STABLECOIN_ADDRESS is not configured
+  // (this dev server has none). The still-open MCP queueing quote is reused,
+  // so no extra quote-bucket call is consumed.
+  const scFail = await j("POST", `/api/quotes/${callOut.quote_id}/accept`, { access_token: callOut.access_token, pay_with: "jpyc" });
+  check("stablecoin accept fails closed when unconfigured", scFail.data.error === "stablecoin_unavailable", `got ${scFail.data.error}`);
+
+  // ── unit checks of the fail-closed branch + verified token constants ──
+  const sc = await import("../lib/stablecoin.js");
+  check("unit: rail disabled without address", sc.stablecoinEnabled() === false);
+  const noInstr = await sc.buildPaymentInstructions({ token: "jpyc", quote: { breakdown: { total_jpy: 11000 }, expires_at: new Date().toISOString() } });
+  check("unit: no instructions when disabled", noInstr === null);
+  check("unit: jpyc contract + 18 decimals", sc.tokenConfig("jpyc").contract === "0xE7C3D8C9a439feDe00D2600032D5dB0Be71C3c29" && sc.tokenConfig("jpyc").decimals === 18);
+  check("unit: usdc contract + 6 decimals", sc.tokenConfig("usdc").contract === "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359" && sc.tokenConfig("usdc").decimals === 6);
 } finally {
   child.kill();
+}
+
+// ── Phase B: stablecoin rail configured, Polygon RPC stubbed locally ──
+const DUMMY_ADDRESS = "0x1111111111111111111111111111111111111111";
+const stubState = { latest: 0x100000, logs: [] };
+const stub = http.createServer((req, res) => {
+  let raw = "";
+  req.on("data", (c) => (raw += c));
+  req.on("end", () => {
+    const out = { jsonrpc: "2.0", id: 1, result: null };
+    try {
+      const { method } = JSON.parse(raw);
+      if (method === "eth_blockNumber") out.result = `0x${stubState.latest.toString(16)}`;
+      else if (method === "eth_getLogs") out.result = stubState.logs;
+    } catch { /* keep result null */ }
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(out));
+  });
+});
+await new Promise((r) => stub.listen(8796, r));
+const child2 = spawn("node", ["dev-server.js"], {
+  env: { ...process.env, PORT: "8797", HFA_STORE_FILE: "/tmp/hfa-test-store2.json", STABLECOIN_ADDRESS: DUMMY_ADDRESS, POLYGON_RPC_URL: "http://localhost:8796" },
+  stdio: "ignore",
+});
+const base2 = "http://localhost:8797";
+async function j2(method, path, body, headers = {}) {
+  const res = await fetch(base2 + path, {
+    method,
+    headers: { "Content-Type": "application/json", ...headers },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return { status: res.status, data: await res.json().catch(() => null) };
+}
+// Async on purpose: the stub RPC server lives in this process, so a blocking
+// spawnSync would freeze it while ops.mjs is calling it.
+function ops(...argv) {
+  return new Promise((resolve) => {
+    const p = spawn("node", ["scripts/ops.mjs", ...argv], {
+      env: { ...process.env, HFA_STORE_FILE: "/tmp/hfa-test-store2.json", STABLECOIN_ADDRESS: DUMMY_ADDRESS, POLYGON_RPC_URL: "http://localhost:8796" },
+    });
+    let stdout = "";
+    let stderr = "";
+    p.stdout.on("data", (d) => (stdout += d));
+    p.stderr.on("data", (d) => (stderr += d));
+    p.on("close", (status) => resolve({ status, stdout, stderr }));
+  });
+}
+try {
+  await wait(900);
+
+  const sq1 = await j2("POST", "/api/quote", { service_id: "stock_check", area: "Shibuya" });
+  check("B: quote for stablecoin test", sq1.status === 201 && sq1.data.quote.breakdown.total_jpy === 11000, `got ${sq1.status}`);
+  const sacc1 = await j2("POST", `/api/quotes/${sq1.data.quote_id}/accept`, { access_token: sq1.data.access_token, pay_with: "jpyc" });
+  const pi1 = sacc1.data.payment_instructions;
+  check("B: jpyc accept returns instructions", sacc1.status === 200 && !!pi1, `got ${sacc1.status}`);
+  check("B: instructions shape", pi1.chain === "polygon" && pi1.token === "jpyc" && pi1.address === DUMMY_ADDRESS && pi1.contract === "0xE7C3D8C9a439feDe00D2600032D5dB0Be71C3c29");
+  check("B: jpyc amount is total + unique tail", pi1.amount.startsWith("11000.") && pi1.amount !== "11000.000000", `got ${pi1.amount}`);
+
+  const sq2 = await j2("POST", "/api/quote", { service_id: "stock_check", area: "Shibuya" });
+  const sacc2 = await j2("POST", `/api/quotes/${sq2.data.quote_id}/accept`, { access_token: sq2.data.access_token, pay_with: "jpyc" });
+  check("B: two quotes get different amounts", sacc2.data.payment_instructions.amount !== pi1.amount, `${pi1.amount} vs ${sacc2.data.payment_instructions.amount}`);
+
+  const uq = await j2("POST", "/api/quote", { service_id: "phone_reservation", details: { venue_type: "restaurant", name: "Sushi-ya" }, currency: "USD" });
+  const uacc = await j2("POST", `/api/quotes/${uq.data.quote_id}/accept`, { access_token: uq.data.access_token, pay_with: "usdc" });
+  const upi = uacc.data.payment_instructions;
+  check("B: usdc instructions from fixed-FX total", !!upi && upi.token === "usdc" && upi.amount.startsWith("51.33") && upi.amount !== "51.330000", `got ${upi?.amount}`);
+
+  // A matching on-chain transfer (stubbed) marks the task paid on status poll.
+  const padAddr = (a) => `0x${a.toLowerCase().replace(/^0x/, "").padStart(64, "0")}`;
+  stubState.logs = [{
+    address: pi1.contract,
+    topics: [
+      "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+      padAddr("0x2222222222222222222222222222222222222222"),
+      padAddr(DUMMY_ADDRESS),
+    ],
+    data: `0x${BigInt(pi1.amount_units).toString(16).padStart(64, "0")}`,
+    blockNumber: `0x${(stubState.latest - 100).toString(16)}`,
+    transactionHash: `0x${"ab".repeat(32)}`,
+  }];
+  const paidB = await j2("GET", `/api/quotes/${sacc1.data.task_id}`, null, bearer(sq1.data.access_token));
+  check("B: matching transfer marks task paid (lazy check)", paidB.data.payment_status === "paid", `got ${paidB.data.payment_status}`);
+
+  stubState.logs = [];
+  const chk = await ops("check-stablecoin", sacc2.data.task_id);
+  check("B: ops check-stablecoin reports unpaid without a transfer", chk.status === 0 && chk.stdout.includes('"paid": false') && chk.stdout.includes("no_matching_transfer_yet"), (chk.stdout || chk.stderr || "").slice(0, 160));
+
+  // Evidence recorded via ops carries the package SHA-256.
+  const evAdd = await ops("evidence", sacc1.data.task_id, "--type", "record", "--label", "stub evidence", "--url", "https://example.com/evidence/1");
+  check("B: ops evidence prints sha256", evAdd.status === 0 && /sha256: [0-9a-f]{64}/.test(evAdd.stdout), (evAdd.stdout || "").slice(0, 160));
+  const evGet = await j2("GET", `/api/tasks/${sacc1.data.task_id}/evidence`, null, bearer(sq1.data.access_token));
+  check("B: get_evidence returns items + sha256", Array.isArray(evGet.data.evidence) && evGet.data.evidence.length === 1 && /^[0-9a-f]{64}$/.test(evGet.data.evidence_sha256 || ""), `got ${evGet.data.evidence_sha256}`);
+
+  // Availability toggle round-trip through the ops console.
+  const avOff = await ops("availability", "off");
+  const availOff = await j2("GET", "/api/availability");
+  check("B: availability off via ops", avOff.status === 0 && availOff.data.accepting_new_tasks === false, `got ${JSON.stringify(availOff.data)}`);
+  await ops("availability", "on");
+  const availOn = await j2("GET", "/api/availability");
+  check("B: availability back on", availOn.data.accepting_new_tasks === true);
+} finally {
+  child2.kill();
+  stub.close();
 }
 console.log(failures === 0 ? "\nALL PASS" : `\n${failures} FAILURES`);
 process.exit(failures === 0 ? 0 : 1);

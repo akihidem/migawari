@@ -129,7 +129,7 @@
   ],
   "terms": {
     "coverage": "Japan only",
-    "payment": "Prepayment. Payment rails (Stripe, JPY and USD) are being connected separately; a quote is not a payment. USD totals use the FX rate fixed and stated at quote time.",
+    "payment": "Prepayment. Pay by card via Stripe (JPY and USD), or in stablecoins — JPYC or USDC on Polygon — sending the exact amount stated in the payment_instructions at accept time; the exact amount identifies your transfer and is verified on-chain. A quote is not a payment. USD totals use the FX rate fixed and stated at quote time.",
     "fee_model": "Two-stage, no-guarantee: (1) Requesting a quote is free. A quote fee of JPY 2,200 is charged as part of the total when you accept a quote, and is non-refundable once charged; (2) a handling fee applies once work starts and is non-refundable after start, even if the task fails. On failure, only the item price and shipping are refundable. Outcomes are never guaranteed; evidence (photos/records) is returned even on failure.",
     "review_policy": "Launch phase: quotes are instant, but execution is NOT confirmed at accept time. Every accepted request enters 'pending_review' and is confirmed or declined by a human operator individually. No start time, same-day handling, or completion time is promised before that review completes. Poll get_task_status for the decision.",
     "agency": "We act strictly as agent: we never become a party to the sales contract, never hold title to goods or inventory, and carry no insurance on goods in transit (carrier schemes apply).",
