@@ -125,3 +125,13 @@ conversion, consumption tax, corporate/invoice number validation,
 postcode/address lookup, prefectures, and text normalization.
 MCP: https://japan-data-tools.vercel.app/mcp — its need_human_in_japan tool
 points back here.
+
+## Use-case pages (one page per question)
+- https://japan-hands.vercel.app/use-cases/limited-edition-shopping.md
+- https://japan-hands.vercel.app/use-cases/akihabara-stock-check.md
+- https://japan-hands.vercel.app/use-cases/shop-display-photos.md
+- https://japan-hands.vercel.app/use-cases/queueing-tokyo.md
+- https://japan-hands.vercel.app/use-cases/restaurant-phone-reservation.md
+- https://japan-hands.vercel.app/use-cases/pay-with-usdc-jpyc.md
+- https://japan-hands.vercel.app/use-cases/package-forwarding.md
+- https://japan-hands.vercel.app/use-cases/hire-human-in-japan.md
