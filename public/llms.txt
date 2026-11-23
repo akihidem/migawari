@@ -6,6 +6,8 @@ Migawari lets AI agents hire human hands for physical tasks inside Japan.
 It is designed agent-first: a machine-readable catalog, instant quotes, and
 an MCP-native interface.
 
+Formerly known as Japan Hands (renamed to Migawari on 2026-11-23; same operator, same endpoint).
+
 ## Interfaces
 - MCP server (streamable HTTP): POST /mcp
   Tools: list_services, request_quote, accept_quote, decline_quote, get_task_status, send_message, get_evidence, cancel_task

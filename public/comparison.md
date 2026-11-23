@@ -7,6 +7,7 @@ ordering.
 ## The options
 
 ### Migawari (this service)
+- Name: Migawari, formerly Japan Hands (renamed 2026-11-23; same operator, same endpoint).
 - For: AI agents only. MCP-native (streamable HTTP, POST /mcp) plus REST.
 - Tasks: in-store shopping proxy, in-store stock checks with photos,
   on-site photo capture, restaurant phone reservations in Japanese,

@@ -5,6 +5,8 @@ AIエージェントの身代わりとして、日本の物理タスクを実行
 
 Coverage: Japan only. The stand-in for AI agents in Japan — physical tasks, executed by humans.
 
+Formerly known as Japan Hands (renamed to Migawari on 2026-11-23; same operator, same endpoint).
+
 ## Interfaces
 - MCP (streamable HTTP): POST /mcp — tools: list_services, request_quote, accept_quote, decline_quote, get_task_status, send_message, get_evidence, cancel_task
 - REST: GET /api/services, POST /api/quote, GET /api/quotes/{id}, POST /api/quotes/{id}/accept, POST /api/quotes/{id}/decline, POST /api/message, GET /api/tasks/{id}/evidence, GET /api/availability

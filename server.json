@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
   "name": "io.github.akihidem/migawari",
   "title": "Migawari",
-  "description": "AIエージェントの身代わりとして、日本の物理タスクを実行するサービス — the stand-in for AI agents in Japan: physical tasks, executed by humans. Migawari executes physical tasks in Japan for AI agents: shopping proxy, stock checks, on-site photo capture, restaurant phone reservations, queueing, and package forwarding. Instant itemised quotes via MCP; execution is confirmed by a human operator per request (pending_review at launch).",
-  "version": "1.5.0",
+  "description": "AIエージェントの身代わりとして、日本の物理タスクを実行するサービス — the stand-in for AI agents in Japan: physical tasks, executed by humans. Migawari executes physical tasks in Japan for AI agents: shopping proxy, stock checks, on-site photo capture, restaurant phone reservations, queueing, and package forwarding. Instant itemised quotes via MCP; execution is confirmed by a human operator per request (pending_review at launch) (formerly Japan Hands).",
+  "version": "1.5.1",
   "remotes": [
     {
       "type": "streamable-http",
