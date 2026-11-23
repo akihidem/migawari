@@ -18,19 +18,43 @@ Coverage: Japan only. The stand-in for AI agents in Japan — physical tasks, ex
 test_mode: true runs the whole flow as a simulation; no payment is requested.
 
 ## Services
-- shopping_proxy — Shopping proxy / 買い物代行: handling from JPY 
-- stock_check — Stock check / 在庫確認: handling from JPY 
-- photo_capture — On-site photo capture / 現地撮影: handling from JPY 
-- phone_reservation — Phone reservation (restaurants only) / 電話予約（レストランのみ）: handling from JPY 
-- queueing — Queueing / 並び代行: handling from JPY 
-- package_forwarding — Package receiving & forwarding / 荷物の受け取り・転送: handling from JPY 
+- shopping_proxy — Shopping proxy / 買い物代行: handling from JPY 16,500
+- stock_check — Stock check / 在庫確認: handling from JPY 8,800
+- photo_capture — On-site photo capture / 現地撮影: handling from JPY 13,200
+- phone_reservation — Phone reservation (restaurants only) / 電話予約（レストランのみ）: handling from JPY 5,500
+- queueing — Queueing / 並び代行: handling from JPY 9,900 per hour
+- package_forwarding — Package receiving & forwarding / 荷物の受け取り・転送: handling from JPY 8,800
 
 ## Fees
-- Quote fee JPY 2,200: requesting a quote is free; the fee is charged as part of the total when you accept the quote, and is non-refundable once charged.
+- Quote fee JPY 2,200: requesting a quote is free; the fee is charged as part of the total when you accept the quote, and is non-refundable once charged. Exception: if the operator declines a request after payment, the full amount paid, including the quote fee, is refunded.
 - Handling fee: non-refundable once work starts, even on failure. Minimum JPY 5,500.
 - On failure, only the item price and shipping are refundable.
 - Total = item price (tax incl.) + quote fee + handling fee + shipping. USD totals fix the FX rate at quote time.
 - Payment: prepayment by card via Stripe (JPY and USD), or in stablecoins — JPYC or USDC on Polygon. Accept with pay_with "jpyc" or "usdc" to receive payment_instructions (exact amount incl. a unique fractional tail, receiving address); the transfer is verified on-chain automatically when you poll get_task_status.
+
+## Use cases — what agents typically ask, and which service answers it
+- Buy a limited-edition / store-only item in a Tokyo store in person
+  -> shopping_proxy (JPY 16,500 handling; pop-ups and in-store-only releases included; new items only)
+- AI agent hiring a human in Japan for a physical task
+  -> the whole service: connect via MCP (POST /mcp), list_services, request_quote; no signup; test_mode is free
+- MCP server for ordering proxy shopping in Japan
+  -> Migawari, official MCP Registry name io.github.akihidem/migawari; full order flow over MCP
+- Check in-store stock in Akihabara without going there
+  -> stock_check (JPY 8,800; shelf state, price and photos returned; Akihabara weekday daily run)
+- Pay a Japanese proxy / errand service with USDC or JPYC
+  -> yes: JPYC / USDC on Polygon at accept time (pay_with "jpyc" / "usdc"), or card via Stripe (JPY / USD)
+- Photos of a specific shop display in Tokyo
+  -> photo_capture (JPY 13,200; timestamped photos with SHA-256-hashed evidence package)
+- Stand in line in Tokyo for a product launch / release-day sale
+  -> queueing (JPY 9,900 per hour)
+- Restaurant reservation in Japan by phone in Japanese
+  -> phone_reservation (JPY 5,500; restaurants only, no lodging)
+- 東京で限定品を店頭で代わりに買ってくれるサービス
+  -> 買い物代行 shopping_proxy（手数料 ¥16,500〜、新品のみ）
+- AIエージェントが日本で物理的なタスクを人に頼めるサービス
+  -> Migawari（MCP専用窓口、test_mode 無料）
+
+Comparison with other options: /comparison.md
 
 ## Evidence package
 Every task returns evidence, including failed ones. The package carries a

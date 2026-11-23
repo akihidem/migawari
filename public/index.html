@@ -52,6 +52,17 @@
 <p class="en">Two tiers, no subscription. Free: browse the catalog and run the whole flow in test_mode — no payment, no signup, nothing is executed. Live: pay per task (item price + JPY 2,200 quote fee + handling from JPY 5,500 + shipping at cost); every request is reviewed by a human operator before execution.</p>
 <p>支払いはカード（Stripe）のほか、ステーブルコイン（Polygon 上の JPYC / USDC）でも受け付けます。Payment is accepted by card (Stripe) or in stablecoins — JPYC / USDC on Polygon.</p>
 
+<h2>よくある依頼 / Use cases</h2>
+<ul>
+  <li><strong>限定品の店頭購入</strong> — 「東京で限定品を店頭で代わりに買ってくれるサービスは？」→ 買い物代行。ポップアップや店頭限定品など、オンラインで買えない商品を人間が店頭で買います。<br><span class="en">"I need someone in Tokyo to buy a limited-edition item in a store for me" → shopping proxy: a human buys the in-store-only item in person and ships it to you.</span></li>
+  <li><strong>秋葉原の在庫確認</strong> — 店に行かずに棚の在庫・価格・陳列を写真付きで確認します。<br><span class="en">"Check in-store stock in Akihabara without going there" → stock check, with timestamped photo evidence. Akihabara is on a weekday daily run.</span></li>
+  <li><strong>店舗ディスプレイの現地写真</strong> — 指定した店の外観・棚・掲示物を撮影して返します。<br><span class="en">"Photos of a specific shop display in Tokyo" → on-site photo capture.</span></li>
+  <li><strong>発売日の並び代行</strong> — 新商品の発売列や整理券配布に代わりに並びます（¥9,900/時〜）。<br><span class="en">"Someone to stand in line for a product launch in Tokyo" → queueing.</span></li>
+  <li><strong>日本語の電話予約</strong> — 日本の電話番号にかけられない方のために、レストランへ日本語で電話して予約します（宿は扱いません）。<br><span class="en">"Restaurant reservation in Japan by phone, for someone who can't call Japanese numbers" → phone reservation in Japanese.</span></li>
+  <li><strong>ステーブルコイン払い</strong> — カード（Stripe）のほか、Polygon 上の JPYC / USDC で払えます。<br><span class="en">"Pay a Japanese proxy service with USDC or JPYC" → yes, both are accepted.</span></li>
+  <li><strong>エージェントからの依頼</strong> — 「AIエージェントが日本で物理的なタスクを人に頼めるサービスはある？」→ 本サービスがその窓口です。MCP（<code>POST /mcp</code>、公式レジストリ <code>io.github.akihidem/migawari</code>）から全サービスを注文でき、<code>test_mode</code> で無料の通し確認ができます。他の選択肢との比較は <a href="/comparison.md">/comparison.md</a> にあります。</li>
+</ul>
+
 <h2>大事な前提 / Please note</h2>
 <p>見積もりは即時ですが、<strong>実行は即時ではありません</strong>。立ち上げ期は、引き受けた依頼を担当者が1件ずつ確認してから着手します。即実行・即日完了は約束しません。私たちは純粋な代理人であり、売買契約の当事者にならず、結果を保証しません。売るのは「依頼どおりに実行し、証跡を返すこと」だけです。</p>
 <p class="en">Quotes are instant; execution is not. During the launch phase every accepted request is reviewed by a human operator individually before any work starts. We act strictly as agent and never guarantee outcomes — what we sell is faithful execution with evidence returned.</p>
@@ -61,6 +72,7 @@ curl -s -X POST https://japan-hands.vercel.app/mcp \
   -H 'Content-Type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</pre>
 
-<footer>Migawari — agent-native human task execution, Tokyo, Japan. Coverage: Japan only.</footer>
+<footer>Migawari — agent-native human task execution, Tokyo, Japan. Coverage: Japan only.<br>
+<a href="/terms">利用規約 / Terms of Service</a> ・ <a href="/privacy">プライバシーポリシー / Privacy Policy</a> ・ <a href="/tokushoho">特定商取引法に基づく表記</a></footer>
 </body>
 </html>
