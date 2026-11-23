@@ -110,7 +110,7 @@ title to goods or inventory, and outcomes are never guaranteed.
 
 ## Comparison
 How Migawari differs from other ways agents get hands in Japan
-(MARU Japan Hands, online-only proxy buyers, general errand services):
+(other agent-facing MCP services, online-only proxy buyers, general errand services, overseas agent-to-human services):
 /comparison.md
 
 ## Legal
