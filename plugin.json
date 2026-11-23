@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "migawari",
+  "version": "1.5.1",
+  "description": "Hire humans in Japan from your AI agent: in-store proxy shopping, Akihabara stock checks with photos, restaurant phone reservations in Japanese, queueing, and package forwarding. Remote MCP with instant itemised quotes, card or JPYC/USDC payment, and a free test mode.",
+  "author": {
+    "name": "Project Grove",
+    "email": "grove-by-mh@outlook.com",
+    "url": "https://japan-hands.vercel.app"
+  },
+  "homepage": "https://japan-hands.vercel.app",
+  "repository": "https://github.com/akihidem/migawari",
+  "keywords": [
+    "mcp",
+    "ai-agents",
+    "japan",
+    "proxy-shopping",
+    "physical-tasks",
+    "tokyo"
+  ]
+}
